@@ -1,0 +1,4 @@
+.build
+/fatfinger*
+local
+.tidyall.d
