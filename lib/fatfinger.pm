@@ -2,42 +2,25 @@ use strict;
 use warnings;
 package fatfinger;
 
-# XXX remove before release
-use feature qw( say state );
-
 use Text::Levenshtein qw(distance);
 
-$SIG{__DIE__} = sub {
-    my $error = shift;
-    state $counter = 0;
-    ++$counter;
+sub import {
+    push @INC, sub {
+        shift;
+        my $name = shift;
 
-    say $counter;
+        my $module = _maybe_find_module_in_INC($name);
+        return unless $module;
 
-    #    return if $counter > 1;
-
-    my $name = _maybe_extract_module_name($error);
-    return unless $name;
-
-    my $module = _maybe_find_module_in_INC($name);
-    return unless $module;
-
-    my $msg = <<"EOF";
-
+        my $msg = <<"EOF";
 
 ----------
 $name could not be found. Did you really mean $module?
 ----------
 
 EOF
-    die $msg;
-};
-
-sub _maybe_extract_module_name {
-    my $error = shift;
-    if ( $error =~ m{locate (.*) in } ) {
-        return $1;
-    }
+        die $msg;
+    };
 }
 
 sub _maybe_find_module_in_INC {
