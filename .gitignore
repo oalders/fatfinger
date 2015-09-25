@@ -1,4 +1,5 @@
 .build
 /fatfinger*
 local
+*.swp
 .tidyall.d
