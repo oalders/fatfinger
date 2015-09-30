@@ -49,8 +49,7 @@ sub _maybe_find_module_in_INC {
 sub _maybe_find_module_on_disk {
     my $module = shift;
 
-    my $rule = Path::Iterator::Rule->new( depth_first => 1 );
-
+    my $rule = Path::Iterator::Rule->new( depth_first => 0 );
     $rule->perl_module;
 
     my @module_parts = File::Spec->splitdir($module);
@@ -58,34 +57,44 @@ sub _maybe_find_module_on_disk {
 
     # don't iterate over any @INC hooks
     my @dirs = grep { !ref $_ } @INC;
-    my @skip_dirs;
 
     foreach my $inc_dir (@dirs) {
-        say $inc_dir;
+        _debug($inc_dir);
         my $this_rule = $rule->clone;
-        $this_rule->skip_dirs( \@skip_dirs ) if @skip_dirs;
+
         $this_rule->and(
             sub {
-                my $path = shift;
-                my $file = shift;
-                say $path;
+                my $path          = shift;
+                my $file          = shift;
+                my $original_path = $path;
+
+                _debug($path);
+
+                return \0 if $file =~ m{\A\.};
 
                 $path =~ s{^$inc_dir/}{};
 
                 # top level directory?
-                return 0 if $inc_dir eq $path;
                 return 0 if $path eq q{};
 
                 my @path_parts = grep { m{\w} } File::Spec->splitdir($path);
-                my $path_depth = @path_parts;
+                shift @path_parts if @path_parts && $path_parts[0] eq 'auto';
 
-                return 0 if $path_depth != $module_depth;
+                my $path_depth = @path_parts;
+                return \0 if $path_depth > $module_depth;
+                return 0 if $path_depth < $module_depth;
 
                 # we could really join on anything here
-                my $distance = distance(
-                    join( '::', @path_parts[ 0 .. $path_depth - 1 ] ),
-                    join( '::', @module_parts[ 0 .. $path_depth - 1 ] )
-                );
+                my $joined_path
+                    = join( '::', @path_parts[ 0 .. $path_depth - 1 ] );
+                my $joined_module
+                    = join( '::', @module_parts[ 0 .. $path_depth - 1 ] );
+
+                my $distance = distance( $joined_path, $joined_module );
+                _debug( 'path: ' . np @path_parts );
+                _debug( 'path: ' . np @module_parts );
+
+                return \0 if ( $path_depth != $module_depth && $distance > 2 );
 
                 # returning \1 will stop the iteration
                 return $distance <= 2 ? \1 : 0;
@@ -101,8 +110,12 @@ sub _maybe_find_module_on_disk {
             $file =~ s{\.pm\z}{};
             return $file;
         }
-        push @skip_dirs, $inc_dir;
     }
+}
+
+sub _debug {
+    my $msg = shift;
+    say $msg if $ENV{FF_DEBUG};
 }
 
 1;
