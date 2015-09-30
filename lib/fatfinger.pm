@@ -49,7 +49,7 @@ sub _maybe_find_module_in_INC {
 sub _maybe_find_module_on_disk {
     my $module = shift;
 
-    my $rule = Path::Iterator::Rule->new( depth_first => 0 );
+    my $rule = Path::Iterator::Rule->new( depth_first => 1 );
     $rule->perl_module;
 
     my @module_parts = File::Spec->splitdir($module);
@@ -82,21 +82,11 @@ sub _maybe_find_module_on_disk {
 
                 my $path_depth = @path_parts;
                 return \0 if $path_depth > $module_depth;
-                return 0 if $path_depth < $module_depth;
+                return 0  if $path_depth < $module_depth;
 
-                # we could really join on anything here
-                my $joined_path
-                    = join( '::', @path_parts[ 0 .. $path_depth - 1 ] );
-                my $joined_module
-                    = join( '::', @module_parts[ 0 .. $path_depth - 1 ] );
+                my $joined_path = join( '/', @path_parts );
+                my $distance = edistance( $joined_path, $module );
 
-                my $distance = edistance( $joined_path, $joined_module );
-                _debug( 'path: ' . np @path_parts );
-                _debug( 'path: ' . np @module_parts );
-
-                return \0 if ( $path_depth != $module_depth && $distance > 2 );
-
-                # returning \1 will stop the iteration
                 return $distance <= 2 ? \1 : 0;
             }
         );
