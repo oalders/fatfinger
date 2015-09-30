@@ -5,7 +5,7 @@ package fatfinger;
 
 use File::Spec;
 use Path::Iterator::Rule;
-use Text::Levenshtein qw(distance);
+use Text::Levenshtein::Damerau qw( edistance );
 
 sub import {
     push @INC, sub {
@@ -39,7 +39,7 @@ sub _maybe_find_module_in_INC {
     my $module = shift;
     $module =~ s{::}{/}g;
     for my $file ( keys %INC ) {
-        if ( distance( $file, $module ) <= 2 ) {
+        if ( edistance( $file, $module ) <= 2 ) {
             $file =~ s{/}{::}g;
             return $file if $file;
         }
@@ -90,7 +90,7 @@ sub _maybe_find_module_on_disk {
                 my $joined_module
                     = join( '::', @module_parts[ 0 .. $path_depth - 1 ] );
 
-                my $distance = distance( $joined_path, $joined_module );
+                my $distance = edistance( $joined_path, $joined_module );
                 _debug( 'path: ' . np @path_parts );
                 _debug( 'path: ' . np @module_parts );
 
