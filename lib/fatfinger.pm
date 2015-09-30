@@ -16,10 +16,13 @@ sub import {
 
         my $module = _maybe_find_module_in_INC($name);
 
-        # Don't recurse through directories if we're called inside an eval or a
-        # sub.  Unfortunately, that's the interferes with our tests, so we'll
+        my @caller = caller(1);
+
+        # Don't recurse through directories if we're called inside an eval
+        # Unfortunately, that's the interferes with our tests, so we'll
         # allow it when run under a test harness.
-        return if !$module && !$ENV{HARNESS_ACTIVE} && caller;
+
+        return if !$module && !$ENV{HARNESS_ACTIVE} && $caller[3];
 
         $module ||= _maybe_find_module_on_disk($name);
         return unless $module;
