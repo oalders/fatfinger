@@ -1,0 +1,3 @@
+package FooBar;
+
+1;
