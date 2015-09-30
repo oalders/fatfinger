@@ -25,4 +25,15 @@ like(
     'recommends FooBar',
 );
 
+like(
+    exception { require Onne::Two::Three::FourX; },
+    qr{Did you really mean One::Two::Three::Four},
+    'recommends One::Two::Three::Four',
+);
+
+unlike(
+    exception { require Onne::Two::Three::FourXYZ; },
+    qr{Did you really mean One::Two::Three::Four},
+    'Does not recommend One::Two::Three::Four',
+);
 done_testing();

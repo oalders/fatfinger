@@ -38,8 +38,7 @@ EOF
 sub _maybe_find_module_in_INC {
     my $module = shift;
     $module =~ s{::}{/}g;
-    my $file;
-    for $file ( keys %INC ) {
+    for my $file ( keys %INC ) {
         if ( distance( $file, $module ) <= 2 ) {
             $file =~ s{/}{::}g;
             return $file if $file;
@@ -50,44 +49,59 @@ sub _maybe_find_module_in_INC {
 sub _maybe_find_module_on_disk {
     my $module = shift;
 
-    my $rule = Path::Iterator::Rule->new;
+    my $rule = Path::Iterator::Rule->new( depth_first => 1 );
+
     $rule->perl_module;
 
-    # iterator interface
+    my @module_parts = File::Spec->splitdir($module);
+    my $module_depth = @module_parts;
+
+    # don't iterate over any @INC hooks
     my @dirs = grep { !ref $_ } @INC;
+    my @skip_dirs;
 
-    foreach my $dir (@dirs) {
-        my $modules = 0;
-        my $next    = $rule->iter($dir);
+    foreach my $inc_dir (@dirs) {
+        say $inc_dir;
+        my $this_rule = $rule->clone;
+        $this_rule->skip_dirs( \@skip_dirs ) if @skip_dirs;
+        $this_rule->and(
+            sub {
+                my $path = shift;
+                my $file = shift;
+                say $path;
+
+                $path =~ s{^$inc_dir/}{};
+
+                # top level directory?
+                return 0 if $inc_dir eq $path;
+                return 0 if $path eq q{};
+
+                my @path_parts = grep { m{\w} } File::Spec->splitdir($path);
+                my $path_depth = @path_parts;
+
+                return 0 if $path_depth != $module_depth;
+
+                # we could really join on anything here
+                my $distance = distance(
+                    join( '::', @path_parts[ 0 .. $path_depth - 1 ] ),
+                    join( '::', @module_parts[ 0 .. $path_depth - 1 ] )
+                );
+
+                # returning \1 will stop the iteration
+                return $distance <= 2 ? \1 : 0;
+            }
+        );
+
+        my $next = $this_rule->iter($inc_dir);
         while ( defined( my $file = $next->() ) ) {
-            my $orig_file = $file;
+            $file =~ s{^$inc_dir/}{}g;
 
-            # remove top level path
-            $file =~ s{^$dir}{}g;
-            my @parts = reverse( File::Spec->splitdir($file) );
-
-            # work from the bottom up until we hit illegal chars
-            my @name;
-            my $count = 0;
-            for my $part (@parts) {
-                if ( $count > 0 && ( $part !~ m{\w} || $part =~ m{[\.\-]} ) )
-                {
-                    last;
-                }
-                push @name, $part;
-                ++$count;
-            }
-            $file = join '::', reverse @name;
-
-            if ( $ENV{FF_DEBUG} ) {
-                say "f: $file m: $module " . distance( $file, $module );
-            }
-
-            if ( distance( lc($file), lc($module) ) <= 2 ) {
-                $file =~ s{\.pm\z}{};
-                return $file;
-            }
+            my @parts = grep { m{\w} } File::Spec->splitdir($file);
+            $file = join '::', @parts;
+            $file =~ s{\.pm\z}{};
+            return $file;
         }
+        push @skip_dirs, $inc_dir;
     }
 }
 
