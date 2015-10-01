@@ -42,7 +42,7 @@ sub _maybe_find_module_in_INC {
     my $module = shift;
     $module =~ s{::}{/}g;
     for my $file ( keys %INC ) {
-        if ( edistance( $file, $module ) <= 2 ) {
+        if ( edistance( lc($file), lc($module) ) <= 2 ) {
             $file =~ s{/}{::}g;
             return $file if $file;
         }
@@ -88,7 +88,7 @@ sub _maybe_find_module_on_disk {
                 return 0  if $path_depth < $module_depth;
 
                 my $joined_path = join( '/', @path_parts );
-                my $distance = edistance( $joined_path, $module );
+                my $distance = edistance( lc($joined_path), lc($module) );
 
                 return $distance <= 2 ? \1 : 0;
             }
