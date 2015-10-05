@@ -7,6 +7,8 @@ use Test::More;
 use lib 't/lib';
 use fatfinger;
 
+$ENV{FF_HARNESS_ACTIVE} = 1;
+
 like(
     exception { require FF::Truncated; },
     qr{Did you really mean strict},

@@ -14,16 +14,19 @@ sub import {
 
         return if $name eq 'prefork.pm';
 
-        my $module = _maybe_find_module_in_INC($name);
-
-        my @caller = caller(1);
-
         # Don't recurse through directories if we're called inside an eval
         # Unfortunately, that's the interferes with our tests, so we'll
         # allow it when run under a test harness.
 
-        return if !$module && !$ENV{HARNESS_ACTIVE} && $caller[3];
+        return if !$ENV{FF_HARNESS_ACTIVE} && $^S;
 
+        my @caller = caller(1);
+        return
+            if !$ENV{FF_HARNESS_ACTIVE}
+            && ( ( $caller[3] && $caller[3] =~ m{eval} )
+            || ( $caller[1] && $caller[1] =~ m{eval} ) );
+
+        my $module = _maybe_find_module_in_INC($name);
         $module ||= _maybe_find_module_on_disk($name);
         return unless $module;
 
@@ -67,9 +70,8 @@ sub _maybe_find_module_on_disk {
 
         $this_rule->and(
             sub {
-                my $path          = shift;
-                my $file          = shift;
-                my $original_path = $path;
+                my $path = shift;
+                my $file = shift;
 
                 _debug($path);
 
