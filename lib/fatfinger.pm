@@ -30,6 +30,9 @@ sub import {
         $module ||= _maybe_find_module_on_disk($name);
         return unless $module;
 
+        $name =~ s{\.pm\z}{};
+        $module =~ s{\.pm\z}{};
+
         my $msg = <<"EOF";
 
 ----------
@@ -114,3 +117,38 @@ sub _debug {
 }
 
 1;
+
+# ABSTRACT: Catch typos in module names
+
+=head1 SYNOPSIS
+
+    use strict;
+    use warnings;
+    use fatfinger;
+
+=head1 DESCRIPTION
+
+C<fatfinger> is a development tool which helps you spot typos in C<use>
+statements.  It does this by adding an C<@INC> hook.  First it checks C<%INC>
+for similarly named modules.  If this comes up empty C<fatfinger> will do some
+fuzzy matching on the files in your C<@INC>.
+
+In order for C<fatfinger> to be effective, C<use> it as early as possible in
+your modules.
+
+For example:
+
+    use strict;
+    use fatfinger;
+    use bwarnings;
+
+When running this code, you should get the following error message:
+
+    ----------
+    bwarnings could not be found. Did you really mean warnings?
+    ----------
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Dave Rolsky, Greg Oschwald and Florian Ragwitz for helping me with
+the logic behind this module.
