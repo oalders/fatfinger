@@ -1,0 +1,45 @@
+NAME
+    fatfinger - Catch typos in module names
+
+VERSION
+    version 0.000001
+
+SYNOPSIS
+        use strict;
+        use warnings;
+        use fatfinger;
+
+DESCRIPTION
+    "fatfinger" is a development tool which helps you spot typos in "use"
+    statements. It does this by adding an @INC hook. First it checks %INC
+    for similarly named modules. If this comes up empty "fatfinger" will do
+    some fuzzy matching on the files in your @INC.
+
+    In order for "fatfinger" to be effective, "use" it as early as possible
+    in your modules.
+
+    For example:
+
+        use strict;
+        use fatfinger;
+        use bwarnings;
+
+    When running this code, you should get the following error message:
+
+        ----------
+        bwarnings could not be found. Did you really mean warnings?
+        ----------
+
+ACKNOWLEDGEMENTS
+    Thanks to Dave Rolsky, Greg Oschwald and Florian Ragwitz for helping me
+    with the logic behind this module.
+
+AUTHOR
+    Olaf Alders <olaf@wundercounter.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2015 by Olaf Alders.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
