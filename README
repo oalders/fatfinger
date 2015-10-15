@@ -11,9 +11,10 @@ SYNOPSIS
 
 DESCRIPTION
     "fatfinger" is a development tool which helps you spot typos in "use"
-    statements. It does this by adding an @INC hook. First it checks %INC
-    for similarly named modules. If this comes up empty "fatfinger" will do
-    some fuzzy matching on the files in your @INC.
+    statements. It does this by adding an @INC hook. If a module which you
+    tried to "use" cannot it be found, "fatfinger" checks %INC for similarly
+    named modules. If this comes up empty "fatfinger" will do some fuzzy
+    matching on the files in your @INC directories.
 
     In order for "fatfinger" to be effective, "use" it as early as possible
     in your modules.
