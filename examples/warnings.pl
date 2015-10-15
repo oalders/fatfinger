@@ -2,5 +2,5 @@
 
 use strict;
 use fatfinger;
-use bwarnings;
+use warningz;
 

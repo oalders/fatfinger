@@ -22,13 +22,18 @@ DESCRIPTION
 
         use strict;
         use fatfinger;
-        use bwarnings;
+        use warningz;
 
     When running this code, you should get the following error message:
 
         ----------
-        bwarnings could not be found. Did you really mean warnings?
+        The module "warningz" could not be found. Perhaps you meant to "use warnings"?
         ----------
+
+CAVEATS
+    This will add a (hopefully) small penalty to the run time of your code
+    if a module cannot be found. Presently it seems to be fast enough for
+    me, but it may not be fast enough for you.
 
 ACKNOWLEDGEMENTS
     Thanks to Dave Rolsky, Greg Oschwald and Florian Ragwitz for helping me
@@ -38,8 +43,9 @@ AUTHOR
     Olaf Alders <olaf@wundercounter.com>
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2015 by Olaf Alders.
+    This software is Copyright (c) 2015 by MaxMind, Inc..
 
-    This is free software; you can redistribute it and/or modify it under
-    the same terms as the Perl 5 programming language system itself.
+    This is free software, licensed under:
+
+      The Artistic License 2.0 (GPL Compatible)
 

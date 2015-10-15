@@ -9,33 +9,34 @@ use fatfinger;
 
 $ENV{FF_HARNESS_ACTIVE} = 1;
 
+my $prefix = 'Perhaps you meant to "use';
 like(
     exception { require FF::Truncated; },
-    qr{Did you really mean strict},
+    qr{$prefix strict},
     'recommends strict',
 );
 
 like(
     exception { require FooBarX; },
-    qr{Did you really mean FooBar},
+    qr{$prefix FooBar},
     'recommends FooBar',
 );
 
 like(
     exception { require XFooBarX; },
-    qr{Did you really mean FooBar},
+    qr{$prefix FooBar},
     'recommends FooBar',
 );
 
 like(
     exception { require Onne::Two::Three::FourX; },
-    qr{Did you really mean One::Two::Three::Four},
+    qr{$prefix One::Two::Three::Four},
     'recommends One::Two::Three::Four',
 );
 
 unlike(
     exception { require Onne::Two::Three::FourXYZ; },
-    qr{Did you really mean One::Two::Three::Four},
+    qr{$prefix One::Two::Three::Four},
     'Does not recommend One::Two::Three::Four',
 );
 done_testing();

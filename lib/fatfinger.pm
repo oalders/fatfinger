@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use feature qw( say );
+
 package fatfinger;
 
 use File::Spec;
@@ -36,7 +36,7 @@ sub import {
         my $msg = <<"EOF";
 
 ----------
-$name could not be found. Did you really mean $module?
+The module "$name" could not be found. Perhaps you meant to "use $module"?
 ----------
 
 EOF
@@ -113,7 +113,7 @@ sub _maybe_find_module_on_disk {
 
 sub _debug {
     my $msg = shift;
-    say $msg if $ENV{FF_DEBUG};
+    print "$msg\n" if $ENV{FF_DEBUG};
 }
 
 1;
@@ -129,9 +129,10 @@ sub _debug {
 =head1 DESCRIPTION
 
 C<fatfinger> is a development tool which helps you spot typos in C<use>
-statements.  It does this by adding an C<@INC> hook.  First it checks C<%INC>
-for similarly named modules.  If this comes up empty C<fatfinger> will do some
-fuzzy matching on the files in your C<@INC>.
+statements.  It does this by adding an C<@INC> hook.  If a module which you
+tried to C<use> cannot it be found, C<fatfinger> checks C<%INC> for similarly
+named modules.  If this comes up empty C<fatfinger> will do some fuzzy matching
+on the files in your C<@INC> directories.
 
 In order for C<fatfinger> to be effective, C<use> it as early as possible in
 your modules.
@@ -140,13 +141,19 @@ For example:
 
     use strict;
     use fatfinger;
-    use bwarnings;
+    use warningz;
 
 When running this code, you should get the following error message:
 
     ----------
-    bwarnings could not be found. Did you really mean warnings?
+    The module "warningz" could not be found. Perhaps you meant to "use warnings"?
     ----------
+
+=head1 CAVEATS
+
+This will add a (hopefully) small penalty to the run time of your code if a
+module cannot be found.  Presently it seems to be fast enough for me, but it
+may not be fast enough for you.
 
 =head1 ACKNOWLEDGEMENTS
 
