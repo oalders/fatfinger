@@ -31,6 +31,7 @@ sub import {
         return unless $module;
 
         $name =~ s{\.pm\z}{};
+        $name =~ s{/}{::}g;
         $module =~ s{\.pm\z}{};
 
         my $msg = <<"EOF";
